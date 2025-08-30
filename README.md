@@ -1,6 +1,6 @@
 # temporal-benchmark
 
-This project is a benchmarking tool to measure the latency and throughput of a [Temporal](https://temporal.io/) cluster.  It focuses on a very narrow use case (workflow creation) but offers a flexible load, processing, and reporting, including:
+This project is a benchmarking tool to measure the latency and throughput of a [Temporal](https://temporal.io/) cluster.  It focuses on a very narrow use case (workflow creation) but offers flexible load, processing, and reporting options, including:
 
 - Configurable request concurrency and total request count.
 - Independent worker parallelization - workers can scale independently from the benchmark client.
@@ -10,7 +10,7 @@ This project is a benchmarking tool to measure the latency and throughput of a [
 
 Manetu leverages Temporal as a critical component of our infrastructure for providing durable execution of [Sagas](https://microservices.io/patterns/data/saga.html).  The performance of Temporal's workflow creation rate has a direct impact on the performance of our product; therefore, we have a vested interest in tuning Temporal for optimal results.
 
-Related to this, we recently [contributed a driver for Yugabyte YCQL](https://github.com/manetu/temporal-yugabyte) to the Temporal community.  We knew from internal benchmarking that the YCQL driver improved Temporal performance, as our product benchmarks and telemetry directly correlate with Temporal performance, and our results indicated a material improvement.  However, it was not easy to quantify this independently of running our entire stack.
+Related to this, we recently [contributed a driver for Yugabyte YCQL](https://github.com/manetu/temporal-yugabyte) to the Temporal community.  We knew from internal benchmarking that the YCQL driver improved Temporal performance indirectly as measured in our product's own benchmarks.  However, it was not easy to quantify this independently of running our entire stack.
 
 Thus, we needed a way to quantify the various Temporal tunings in a manner that was easy for the community to replicate without needing to run an entire Manetu instance.  We first looked to existing tools such as [Omes](https://github.com/temporalio/omes) and [Maru](https://github.com/temporalio/maru).  However, these tools were built for different purposes and didn't meet our needs.  They offer a very flexible way to define various loads on Temporal, but are lacking in gathering and reporting analytics.  Our needs were much simpler in terms of load definition, but more sophisticated on the reporting side.
 
