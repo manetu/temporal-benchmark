@@ -34,6 +34,11 @@
    ["-v" "--version" "Print version info and exit"]
    [nil "--temporal-target HOSTPORT" "The host:port of the Temporal cluster"
     :default "localhost:7233"]
+   [nil "--temporal-namespace NAMESPACE" "The Temporal namespace to use"
+    :default "default"]
+   [nil "--temporal-tls ENABLED" "Enable TLS for Temporal connection"
+    :default false]
+   [nil "--temporal-ca PATH" "Path to a PEM for CA trust-root for Temporal cluster"]
    [nil "--temporal-taskqueue QUEUENAME" "The temporal taskqueue to use"
     :default "temporal-benchmark"]
    ["-l" "--log-level LEVEL" loglevel-description

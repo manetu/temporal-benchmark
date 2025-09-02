@@ -4,7 +4,8 @@
   (:require [clojure.string :as string]
             [clojure.tools.cli :refer [parse-opts]]
             [slingshot.slingshot :refer [throw+ try+]]
-            [temporal.client.core :as c]))
+            [temporal.client.core :as c]
+            [temporal.tls :as tls]))
 
 (def tool-name "temporal-benchmark")
 
@@ -35,18 +36,24 @@
 (defn error-exit [error-msg summary]
   (exit -1 (str "Error: " error-msg "\n\n") summary))
 
-(defn global-option-error [field usage-summary]
-  (error-exit (str "global option '" field "' required") usage-summary))
-
 (defn round2
   "Round a double to the given precision (number of significant digits)"
   [precision ^double d]
   (let [factor (Math/pow 10 precision)]
     (/ (Math/round (* d factor)) factor)))
 
+(defn new-ssl-context [{:keys [temporal-ca] :as global-options}]
+  (-> {}
+      (cond-> temporal-ca (assoc :ca-path temporal-ca))
+      (tls/new-ssl-context)))
+
+(defn create-client [{:keys [temporal-target temporal-namespace temporal-tls] :as global-options}]
+  (c/create-client (-> {:target temporal-target
+                        :namespace temporal-namespace}
+                       (cond-> temporal-tls (assoc :ssl-context (new-ssl-context global-options))))))
+
 (defn exec-command
-  [{:keys [command description options-spec fn]} global-summary
-   {:keys [temporal-target] :as global-options} args]
+  [{:keys [command description options-spec fn]} global-summary global-options args]
   (let [{{:keys [help] :as local-options} :options
          :keys [errors summary]} (parse-opts args (cons ["-h" "--help"] options-spec))
         summary (subcommand-usage command description global-summary summary)]
@@ -60,5 +67,5 @@
 
       :else
       (let [options (merge global-options local-options)
-            client (c/create-client {:target temporal-target})]
+            client (create-client global-options)]
         (fn options client)))))
