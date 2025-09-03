@@ -1,7 +1,8 @@
 ;; Copyright © Manetu, Inc.  All rights reserved
 
 (ns manetu.temporal-benchmark.commands.worker
-  (:require [temporal.workflow :refer [defworkflow]]
+  (:require [promesa.exec :as p.exec]
+            [temporal.workflow :refer [defworkflow]]
             [temporal.client.worker :as worker]
             [manetu.temporal-benchmark.utils :refer [exec-command]]))
 
@@ -30,7 +31,7 @@
     :parse-fn parse-long
     :validate [pos? "Must be a positive integer"]]
    [nil "--[no-]using-virtual-workflow-threads" "Use Virtual Threads for workflow threads (requires JDK 21+)"
-    :default false]])
+    :default p.exec/vthreads-supported?]])
 
 (defn start [{:keys [temporal-taskqueue
                      max-concurrent-workflow-task-pollers

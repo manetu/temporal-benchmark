@@ -27,6 +27,8 @@
   :uberjar-name "app.jar"
   :jvm-opts ["-server"]
 
+  :manifest {"Multi-Release" true}                          ;; needed so that we use the right version of temporal vthreads
+
   :bin {:name "temporal-benchmark"
         :bootclasspath false}
 
