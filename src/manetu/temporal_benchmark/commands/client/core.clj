@@ -22,11 +22,11 @@
     :default false]
    [nil "--client-concurrency NUM" "The number of parallel requests to issue"
     :default 16
-    :parse-fn #(Integer/parseInt %)
+    :parse-fn parse-long
     :validate [pos? "Must be a positive integer"]]
    [nil "--client-requests NUM" "The total number of requests to issue"
     :default 100
-    :parse-fn #(Integer/parseInt %)
+    :parse-fn parse-long
     :validate [pos? "Must be a positive integer"]]])
 
 (defn- execute-request [{:keys [temporal-taskqueue] :as options} client record]

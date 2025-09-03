@@ -47,10 +47,10 @@
       (cond-> temporal-ca (assoc :ca-path temporal-ca))
       (tls/new-ssl-context)))
 
-(defn create-client [{:keys [temporal-target temporal-namespace temporal-tls] :as global-options}]
+(defn create-client [{:keys [temporal-target temporal-namespace tls] :as global-options}]
   (c/create-client (-> {:target temporal-target
                         :namespace temporal-namespace}
-                       (cond-> temporal-tls (assoc :ssl-context (new-ssl-context global-options))))))
+                       (cond-> tls (assoc :ssl-context (new-ssl-context global-options))))))
 
 (defn exec-command
   [{:keys [command description options-spec fn]} global-summary global-options args]
