@@ -20,6 +20,14 @@
     :default false]
    [nil "--verbose-errors" "Any sub-operation failure is logged as ERROR instead of TRACE"
     :default false]
+   [nil "--batch-size NUM" "The number of parallel activities in one batch"
+    :default 0
+    :parse-fn parse-long
+    :validate [nat-int? "Must be a non-negative integer"]]
+   [nil "--batch-nr NUM" "The number of batches to run serially"
+    :default 0
+    :parse-fn parse-long
+    :validate [nat-int? "Must be a non-negative integer"]]
    [nil "--client-concurrency NUM" "The number of parallel requests to issue"
     :default 16
     :parse-fn parse-long
@@ -31,7 +39,7 @@
 
 (defn- execute-request [{:keys [temporal-taskqueue] :as options} client record]
   (let [w (c/create-workflow client worker/benchmark-workflow {:task-queue temporal-taskqueue})]
-    (c/start w {:foo "bar"})
+    (c/start w (select-keys options [:batch-size :batch-nr]))
     @(c/get-result w)))
 
 (defn start [{:keys [client-requests client-concurrency] :as options} client]
