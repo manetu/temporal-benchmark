@@ -5,7 +5,8 @@
             [clojure.tools.cli :refer [parse-opts]]
             [slingshot.slingshot :refer [throw+ try+]]
             [temporal.client.core :as c]
-            [temporal.tls :as tls]))
+            [temporal.tls :as tls]
+            [manetu.temporal-benchmark.metrics :as metrics]))
 
 (def tool-name "temporal-benchmark")
 
@@ -49,7 +50,8 @@
 
 (defn create-client [{:keys [temporal-target temporal-namespace tls] :as global-options}]
   (c/create-client (-> {:target temporal-target
-                        :namespace temporal-namespace}
+                        :namespace temporal-namespace
+                        :metrics-scope @metrics/root-scope}
                        (cond-> tls (assoc :ssl-context (new-ssl-context global-options))))))
 
 (defn exec-command

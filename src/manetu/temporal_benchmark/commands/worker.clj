@@ -8,6 +8,7 @@
             [temporal.activity :refer [defactivity] :as a]
             [temporal.promise :as tp]
             [temporal.client.worker :as worker]
+            [manetu.temporal-benchmark.metrics :as metrics]
             [manetu.temporal-benchmark.utils :refer [exec-command]]))
 
 (def command "worker")
@@ -49,28 +50,38 @@
     :default 1000
     :parse-fn parse-long
     :validate [pos? "Must be a positive integer"]]
+   [nil "--[no-]metrics-enabled" "Enable metrics endpoint (see --metrics-port)"
+    :default false]
+   [nil "--metrics-port NUM" "The HTTP port for metrics, when enabled"
+    :default 8080
+    :parse-fn parse-long
+    :validate [pos? "Must be a positive integer"]]
    [nil "--[no-]using-virtual-workflow-threads" "Use Virtual Threads for workflow threads (requires JDK 21+)"
     :default p.exec/vthreads-supported?]])
 
-(defn start [options client]
-  (worker/start client
-                (-> (select-keys options [:temporal-taskqueue
-                                          :max-concurrent-activity-task-pollers
-                                          :max-concurrent-activity-execution-size
-                                          :max-concurrent-workflow-task-pollers
-                                          :max-concurrent-workflow-task-execution-size])
-                    (rename-keys {:temporal-taskqueue :task-queue}))
-                (select-keys options [:max-workflow-thread-count
-                                      :workflow-cache-size
-                                      :using-virtual-workflow-threads])))
+(defn start [{:keys [metrics-enabled metrics-port] :as options} client]
+  (let [mctx (when metrics-enabled (metrics/start metrics-port))
+        wctx (worker/start client
+                           (-> (select-keys options [:temporal-taskqueue
+                                                     :max-concurrent-activity-task-pollers
+                                                     :max-concurrent-activity-execution-size
+                                                     :max-concurrent-workflow-task-pollers
+                                                     :max-concurrent-workflow-task-execution-size])
+                               (rename-keys {:temporal-taskqueue :task-queue}))
+                           (select-keys options [:max-workflow-thread-count
+                                                 :workflow-cache-size
+                                                 :using-virtual-workflow-threads]))]
+    {:mctx mctx :wctx wctx}))
 
-(def stop worker/stop)
+(defn stop [{:keys [mctx wctx]}]
+  (some-> mctx metrics/stop)
+  (some-> wctx worker/stop))
 
 (defn exec [options client]
-  (let [w (start options client)]
+  (let [ctx (start options client)]
     (println "Worker running.  Press CNTL-C to exit")
     (deref (promise))
-    (worker/stop w)))
+    (stop ctx)))
 
 (def spec {:description description
            :fn (partial exec-command {:command        command
